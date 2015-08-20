@@ -8,7 +8,7 @@
 //  - 13 bits is an auto-incrementing sequence for ID requests within the same millisecond
 //
 // Note: In order to make a millisecond timestamp fit within 41 bits, a custom
-// epoch of Jan 1, 2014 00:00:00 is used.
+// epoch of Jan 1, 2015 00:00:00 is used.
 
 package flake
 
@@ -29,8 +29,8 @@ const (
 
 var (
 	// Custom Epoch so the timestamp can fit into 41 bits.
-	// Jan 1, 2014 00:00:00 UTC
-	Epoch       time.Time = time.Date(2014, 1, 1, 0, 0, 0, 0, time.UTC)
+	// Jan 1, 2015 00:00:00 UTC
+	Epoch       time.Time = time.Date(2015, 1, 1, 0, 0, 0, 0, time.UTC)
 	MaxHostId   uint64    = (1 << HostBits) - 1
 	MaxSequence uint64    = (1 << SequenceBits) - 1
 )
