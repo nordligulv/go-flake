@@ -39,13 +39,13 @@ var (
 type Id uint64
 
 // String formats the Id as a 16 character hexadecimal string
-func (id *Id) String() string {
-	return strconv.FormatUint(uint64(*id), 16)
+func (id Id) String() string {
+	return strconv.FormatUint(uint64(id), 16)
 }
 
 // Uint64 formats the Id as an unsigned integer
-func (id *Id) Uint64() uint64 {
-	return uint64(*id)
+func (id Id) Uint64() uint64 {
+	return uint64(id)
 }
 
 // Flake is a unique Id generator
@@ -59,7 +59,6 @@ type Flake struct {
 // New returns a new Id generator and a possible error condition
 func New() (*Flake, error) {
 	hostId, err := getHostId()
-
 	if err != nil {
 		return nil, err
 	}
@@ -113,13 +112,11 @@ func getTimestamp() uint64 {
 // getHostId returns the host id using the IP address of the machine
 func getHostId() (uint64, error) {
 	h, err := os.Hostname()
-
 	if err != nil {
 		return 0, err
 	}
 
 	addrs, err := net.LookupIP(h)
-
 	if err != nil {
 		return 0, err
 	}
