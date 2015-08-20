@@ -38,9 +38,9 @@ var (
 // Id represents a unique k-ordered Id
 type Id uint64
 
-// String formats the Id as a 16 character hexadecimal string
+// String formats the Id as a base36 string
 func (id Id) String() string {
-	return strconv.FormatUint(uint64(id), 16)
+	return strconv.FormatUint(uint64(id), 36)
 }
 
 // Uint64 formats the Id as an unsigned integer
