@@ -20,8 +20,6 @@ import (
 	"time"
 )
 
-//-----------------------------------------------------------------------------
-
 const (
 	HostBits     = 10
 	SequenceBits = 13
@@ -72,35 +70,33 @@ func New() (*Flake, error) {
 
 // NextId returns a new Id from the generator
 func (f *Flake) NextId() Id {
-	f.mu.Lock()
-	defer f.mu.Unlock()
-
 	now := getTimestamp()
 
-	if now < f.prevTime {
-		now = f.prevTime
-	}
+	f.mu.Lock()
+	sequence := f.sequence
 
 	// Use the sequence number if the id request is in the same millisecond as
 	// the previous request.
-	if now == f.prevTime {
-		f.sequence += 1
+	if now <= f.prevTime {
+		now = f.prevTime
+		sequence++
 	} else {
-		f.sequence = 0
+		sequence = 0
 	}
 
 	// Bump the timestamp by 1ms if we run out of sequence bits.
-	if f.sequence > MaxSequence {
-		now += 1
-		f.sequence = 0
+	if sequence > MaxSequence {
+		now++
+		sequence = 0
 	}
 
 	f.prevTime = now
+	f.sequence = sequence
+	f.mu.Unlock()
 
 	timestamp := now << (HostBits + SequenceBits)
 	hostid := f.hostId << SequenceBits
-
-	return Id(timestamp | hostid | f.sequence)
+	return Id(timestamp | hostid | sequence)
 }
 
 // getTimestamp returns the timestamp in milliseconds adjusted for the custom
@@ -123,6 +119,5 @@ func getHostId() (uint64, error) {
 
 	a := addrs[0].To4()
 	ip := uint64((a[0] * 1 << 24) + (a[1] * 1 << 16) + (a[2] * 1 << 8) + a[3])
-
 	return ip % MaxHostId, nil
 }
