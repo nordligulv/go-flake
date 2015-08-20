@@ -13,6 +13,8 @@
 package flake
 
 import (
+	"crypto/rand"
+	"encoding/binary"
 	"net"
 	"os"
 	"strconv"
@@ -29,7 +31,7 @@ var (
 	// Custom Epoch so the timestamp can fit into 41 bits.
 	// Jan 1, 2015 00:00:00 UTC
 	Epoch       time.Time = time.Date(2015, 1, 1, 0, 0, 0, 0, time.UTC)
-	MaxHostId   uint64    = (1 << HostBits) - 1
+	MaxWorkerId uint64    = (1 << HostBits) - 1
 	MaxSequence uint64    = (1 << SequenceBits) - 1
 )
 
@@ -49,23 +51,36 @@ func (id Id) Uint64() uint64 {
 // Flake is a unique Id generator
 type Flake struct {
 	prevTime uint64
-	hostId   uint64
+	workerId uint64
 	sequence uint64
 	mu       sync.Mutex
 }
 
-// New returns a new Id generator and a possible error condition
-func New() (*Flake, error) {
-	hostId, err := getHostId()
-	if err != nil {
-		return nil, err
-	}
-
+// New returns new Id generator
+func New(workerId uint64) *Flake {
 	return &Flake{
 		sequence: 0,
 		prevTime: getTimestamp(),
-		hostId:   hostId,
-	}, nil
+		workerId: workerId % MaxWorkerId,
+	}
+}
+
+// WithHostId creates new Id generator with host machine address as worker id
+func WithHostId() (*Flake, error) {
+	workerID, err := getHostId()
+	if err != nil {
+		return nil, err
+	}
+	return New(workerID), nil
+}
+
+// WithRandomId creates new Id generator with random worker id
+func WithRandomId() (*Flake, error) {
+	workerID, err := getRandomId()
+	if err != nil {
+		return nil, err
+	}
+	return New(workerID), nil
 }
 
 // NextId returns a new Id from the generator
@@ -95,8 +110,8 @@ func (f *Flake) NextId() Id {
 	f.mu.Unlock()
 
 	timestamp := now << (HostBits + SequenceBits)
-	hostid := f.hostId << SequenceBits
-	return Id(timestamp | hostid | sequence)
+	workerId := f.workerId << SequenceBits
+	return Id(timestamp | workerId | sequence)
 }
 
 // getTimestamp returns the timestamp in milliseconds adjusted for the custom
@@ -118,6 +133,15 @@ func getHostId() (uint64, error) {
 	}
 
 	a := addrs[0].To4()
-	ip := uint64(a[0]) << 24 + uint64(a[1]) << 16 + uint64(a[2]) << 8 + uint64(a[3])
-	return ip % MaxHostId, nil
+	ip := binary.BigEndian.Uint32(a)
+	return uint64(ip), nil
+}
+
+// getRandomId generates random worker id
+func getRandomId() (uint64, error) {
+	var b [8]byte
+	if _, err := rand.Read(b[:]); err != nil {
+		return 0, err
+	}
+	return binary.BigEndian.Uint64(b[:]), nil
 }

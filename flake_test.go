@@ -6,11 +6,7 @@ import (
 )
 
 func TestNewFlake(t *testing.T) {
-	f, err := New()
-
-	if err != nil {
-		t.Errorf("Unable to create new ID generator: %s", err)
-	}
+	f := New(1)
 
 	var ids []string
 
@@ -26,12 +22,7 @@ func TestNewFlake(t *testing.T) {
 }
 
 func BenchmarkNextId(b *testing.B) {
-
-	f, err := New()
-
-	if err != nil {
-		b.Fatalf("Unable to create new ID generator: %s", err)
-	}
+	f := New(1)
 
 	for i := 0; i < b.N; i++ {
 		_ = f.NextId()
