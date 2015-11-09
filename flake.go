@@ -15,6 +15,7 @@ package flake
 import (
 	"crypto/rand"
 	"encoding/binary"
+	"errors"
 	"net"
 	"os"
 	"strconv"
@@ -133,6 +134,10 @@ func getHostId() (uint64, error) {
 	}
 
 	a := addrs[0].To4()
+	if len(a) < 4 {
+		return 0, errors.New("failed to resolve hostname")
+	}
+
 	ip := binary.BigEndian.Uint32(a)
 	return uint64(ip), nil
 }
