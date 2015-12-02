@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"log"
 
 	"github.com/nordligulv/go-flake"
 )
@@ -16,10 +15,7 @@ var (
 
 func main() {
 	flag.Parse()
-	f, err := flake.New(1)
-	if err != nil {
-		log.Fatal(err)
-	}
+	f := flake.New(1)
 
 	if !*hex && !*integer {
 		*hex = true
