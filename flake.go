@@ -29,63 +29,62 @@ const (
 )
 
 var (
-	// Custom Epoch so the timestamp can fit into 41 bits.
-	// Jan 1, 2015 00:00:00 UTC
-	Epoch       time.Time = time.Date(2015, 1, 1, 0, 0, 0, 0, time.UTC)
-	MaxWorkerId uint64    = (1 << HostBits) - 1
-	MaxSequence uint64    = (1 << SequenceBits) - 1
+	// Epoch is used to trim the timestamp so it can fit into 41 bits.
+	Epoch              = time.Date(2015, 1, 1, 0, 0, 0, 0, time.UTC)
+	MaxWorkerID uint64 = (1 << HostBits) - 1
+	MaxSequence uint64 = (1 << SequenceBits) - 1
 )
 
-// Id represents a unique k-ordered Id
-type Id uint64
+// ID represents a unique k-ordered ID
+type ID uint64
 
-// String formats the Id as a base36 string
-func (id Id) String() string {
+// String formats the ID as a base36 string
+func (id ID) String() string {
 	return strconv.FormatUint(uint64(id), 36)
 }
 
-// Uint64 formats the Id as an unsigned integer
-func (id Id) Uint64() uint64 {
+// Uint64 formats the ID as an unsigned integer
+func (id ID) Uint64() uint64 {
 	return uint64(id)
 }
 
-// Flake is a unique Id generator
+// Flake is a unique ID generator
 type Flake struct {
 	prevTime uint64
-	workerId uint64
+	workerID uint64
 	sequence uint64
 	mu       sync.Mutex
 }
 
-// New returns new Id generator
-func New(workerId uint64) *Flake {
+// New returns new ID generator
+func New(workerID uint64) *Flake {
 	return &Flake{
 		sequence: 0,
 		prevTime: getTimestamp(),
-		workerId: workerId % MaxWorkerId,
+		workerID: workerID % MaxWorkerID,
 	}
 }
 
-// WithHostId creates new Id generator with host machine address as worker id
-func WithHostId() (*Flake, error) {
-	workerID, err := getHostId()
+// WithHostID creates new ID generator with host machine address as worker id
+func WithHostID() (*Flake, error) {
+	workerID, err := getHostID()
 	if err != nil {
 		return nil, err
 	}
 	return New(workerID), nil
 }
 
-// WithRandomId creates new Id generator with random worker id
-func WithRandomId() (*Flake, error) {
-	workerID, err := getRandomId()
+// WithRandomID creates new ID generator with random worker id
+func WithRandomID() (*Flake, error) {
+	workerID, err := getRandomID()
 	if err != nil {
 		return nil, err
 	}
 	return New(workerID), nil
 }
 
-// NextId returns a new Id from the generator
-func (f *Flake) NextId() Id {
+// NextID returns a new ID from the generator
+func (f *Flake) NextID() ID {
 	now := getTimestamp()
 
 	f.mu.Lock()
@@ -111,8 +110,8 @@ func (f *Flake) NextId() Id {
 	f.mu.Unlock()
 
 	timestamp := now << (HostBits + SequenceBits)
-	workerId := f.workerId << SequenceBits
-	return Id(timestamp | workerId | sequence)
+	workerID := f.workerID << SequenceBits
+	return ID(timestamp | workerID | sequence)
 }
 
 // getTimestamp returns the timestamp in milliseconds adjusted for the custom
@@ -121,8 +120,8 @@ func getTimestamp() uint64 {
 	return uint64(time.Since(Epoch).Nanoseconds() / 1e6)
 }
 
-// getHostId returns the host id using the IP address of the machine
-func getHostId() (uint64, error) {
+// getHostID returns the host id using the IP address of the machine
+func getHostID() (uint64, error) {
 	h, err := os.Hostname()
 	if err != nil {
 		return 0, err
@@ -142,8 +141,8 @@ func getHostId() (uint64, error) {
 	return uint64(ip), nil
 }
 
-// getRandomId generates random worker id
-func getRandomId() (uint64, error) {
+// getRandomID generates random worker id
+func getRandomID() (uint64, error) {
 	var b [8]byte
 	if _, err := rand.Read(b[:]); err != nil {
 		return 0, err
