@@ -3,17 +3,20 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/davidnarayan/go-flake"
 	"log"
+
+	"github.com/nordligulv/go-flake"
 )
 
-var max = flag.Int("max", 1, "number of IDs to create")
-var hex = flag.Bool("hex", false, "Show hex representation")
-var integer = flag.Bool("integer", false, "Show integer representation")
+var (
+	max     = flag.Int("max", 1, "number of IDs to create")
+	hex     = flag.Bool("hex", false, "Show hex representation")
+	integer = flag.Bool("integer", false, "Show integer representation")
+)
 
 func main() {
 	flag.Parse()
-	f, err := flake.New()
+	f, err := flake.New(1)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -23,7 +26,7 @@ func main() {
 	}
 
 	for i := 0; i < *max; i++ {
-		id := f.NextId()
+		id := f.NextID()
 
 		if *integer {
 			fmt.Println(id)

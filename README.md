@@ -15,7 +15,7 @@ Installation
 ------------
 
 ```
-go get github.com/davidnarayan/go-flake
+go get github.com/nordligulv/go-flake
 ```
 
 
@@ -27,17 +27,17 @@ package main
 
 import (
 	"log"
-	"github.com/davidnarayan/go-flake"
+	"github.com/nordligulv/go-flake"
 )
 
 func main() {
-	f, err := flake.New()
+	f, err := flake.New(1)
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	id := f.NextId()
+	id := f.NextID()
 	fmt.Println(id)
 	fmt.Println(id.String())
 }

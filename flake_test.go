@@ -11,7 +11,7 @@ func TestNewFlake(t *testing.T) {
 	var ids []string
 
 	for i := 0; i < 4; i++ {
-		id := f.NextId()
+		id := f.NextID()
 
 		ids = append(ids, id.String())
 	}
@@ -25,6 +25,6 @@ func BenchmarkNextId(b *testing.B) {
 	f := New(1)
 
 	for i := 0; i < b.N; i++ {
-		_ = f.NextId()
+		_ = f.NextID()
 	}
 }
